@@ -114,6 +114,8 @@ namespace CM_Semi_Random_Research
 
         private void DrawLeftColumn(Rect leftRect)
         {
+            ResearchTracker researchTracker = Current.Game.World.GetComponent<ResearchTracker>();
+
             Rect position = leftRect;
             GUI.BeginGroup(position);
 
@@ -122,7 +124,12 @@ namespace CM_Semi_Random_Research
             float gapHeight = 10.0f;
             float buttonHeight = 50.0f;
 
+            float rerollButtonHeight = 40.0f;
+
             float footerHeight = (gapHeight + buttonHeight);
+
+            if (researchTracker != null && researchTracker.CanReroll)
+                footerHeight += (gapHeight + rerollButtonHeight);
 
             // Selected project name
             Text.Font = GameFont.Medium;
@@ -148,7 +155,7 @@ namespace CM_Semi_Random_Research
 
             Widgets.EndScrollView();
 
-            ResearchTracker researchTracker = Current.Game.World.GetComponent<ResearchTracker>();
+            
 
             if (researchTracker != null)
             {
@@ -157,6 +164,16 @@ namespace CM_Semi_Random_Research
                 TaggedString translatedAutoResearchString = "CM_Semi_Random_Research_Auto_Research_Label".Translate();
                 Widgets.LabelCacheHeight(ref autoResearchCheckRect, translatedAutoResearchString);
                 Widgets.CheckboxLabeled(autoResearchCheckRect, translatedAutoResearchString, ref researchTracker.autoResearch);
+
+                if (researchTracker.CanReroll)
+                {
+                    Rect rerollButtonRect = new Rect(0f, autoResearchCheckRect.yMax + gapHeight, position.width, rerollButtonHeight);
+                    if (Widgets.ButtonText(rerollButtonRect, "CM_Semi_Random_Research_Reroll_Label".Translate()))
+                    {
+                        SoundDefOf.Click.PlayOneShotOnCamera();
+                        researchTracker.Reroll();
+                    }
+                }
             }
 
             GUI.EndGroup();
@@ -285,6 +302,7 @@ namespace CM_Semi_Random_Research
                     {
                         SoundDefOf.ResearchStart.PlayOneShotOnCamera();
                         Find.ResearchManager.currentProj = selectedProject;
+                        Current.Game.World.GetComponent<ResearchTracker>()?.SetCurrentProject(selectedProject);
                         TutorSystem.Notify_Event("StartResearchProject");
                         if (!ColonistsHaveResearchBench)
                         {

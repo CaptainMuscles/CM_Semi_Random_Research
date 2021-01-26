@@ -20,6 +20,10 @@ namespace CM_Semi_Random_Research
 
         public bool autoResearch = false;
 
+        private bool rerolled = false;
+
+        public bool CanReroll => (SemiRandomResearchMod.settings.allowManualReroll == ManualReroll.Always || (SemiRandomResearchMod.settings.allowManualReroll == ManualReroll.Once && !rerolled));
+
         public ResearchTracker(World world) : base(world)
         {
 
@@ -32,6 +36,7 @@ namespace CM_Semi_Random_Research
             Scribe_Collections.Look(ref currentAvailableProjects, "currentAvailableProjects", LookMode.Def);
             Scribe_Defs.Look(ref currentProject, "currentProject");
             Scribe_Values.Look(ref autoResearch, "autoResearch", false);
+            Scribe_Values.Look(ref rerolled, "rerolled", false);
         }
 
         public override void WorldComponentTick()
@@ -39,6 +44,9 @@ namespace CM_Semi_Random_Research
             base.WorldComponentTick();
 
             ResearchProjectDef activeProject = Find.ResearchManager.currentProj;
+
+            if (currentProject != null && currentProject.IsFinished)
+                rerolled = false;
 
             if (currentProject == null || currentProject.IsFinished)
             {
@@ -50,7 +58,11 @@ namespace CM_Semi_Random_Research
 
             if (activeProject != currentProject)
             {
-                if (currentProject == null && currentAvailableProjects.Contains(activeProject))
+                if (!SemiRandomResearchMod.settings.featureEnabled)
+                {
+                    currentProject = activeProject;
+                }
+                else if (currentProject == null && currentAvailableProjects.Contains(activeProject))
                 {
                     currentProject = activeProject;
                 }
@@ -65,20 +77,41 @@ namespace CM_Semi_Random_Research
         {
             currentAvailableProjects = currentAvailableProjects.Where(projectDef => !projectDef.IsFinished).ToList();
 
-            int numberOfMissingProjects = SemiRandomResearchMod.settings.availableProjectCount - currentAvailableProjects.Count;
-            if (numberOfMissingProjects > 0)
+            if (!SemiRandomResearchMod.settings.rerollAllEveryTime || currentProject == null || currentProject.IsFinished)
             {
-                List<ResearchProjectDef> allAvailableProjects = DefDatabase<ResearchProjectDef>.AllDefsListForReading
-                    .Where((ResearchProjectDef projectDef) => !currentAvailableProjects.Contains(projectDef) && projectDef.CanStartProject()).ToList();
-
-                if (allAvailableProjects.Count > 0)
+                int numberOfMissingProjects = SemiRandomResearchMod.settings.availableProjectCount - currentAvailableProjects.Count;
+                if (numberOfMissingProjects > 0)
                 {
-                    allAvailableProjects.Shuffle();
-                    currentAvailableProjects.AddRange(allAvailableProjects.Take(Math.Min(numberOfMissingProjects, allAvailableProjects.Count)).ToList());
+                    List<ResearchProjectDef> allAvailableProjects = DefDatabase<ResearchProjectDef>.AllDefsListForReading
+                        .Where((ResearchProjectDef projectDef) => !currentAvailableProjects.Contains(projectDef) && projectDef.CanStartProject()).ToList();
+
+                    if (allAvailableProjects.Count > 0)
+                    {
+                        allAvailableProjects.Shuffle();
+                        currentAvailableProjects.AddRange(allAvailableProjects.Take(Math.Min(numberOfMissingProjects, allAvailableProjects.Count)).ToList());
+                    }
                 }
             }
 
             return new List<ResearchProjectDef> (currentAvailableProjects);
+        }
+
+        public void SetCurrentProject(ResearchProjectDef newCurrentProject)
+        {
+            currentProject = newCurrentProject;
+
+            if (SemiRandomResearchMod.settings.rerollAllEveryTime)
+                currentAvailableProjects = currentAvailableProjects.Where(projectDef => projectDef == currentProject).ToList();
+        }
+
+        public void Reroll()
+        {
+            rerolled = true;
+
+            currentProject = null;
+            Find.ResearchManager.currentProj = null;
+
+            currentAvailableProjects.Clear();
         }
     }
 }

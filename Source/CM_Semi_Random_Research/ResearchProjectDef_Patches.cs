@@ -18,7 +18,8 @@ namespace CM_Semi_Random_Research
             [HarmonyPostfix]
             public static void Postfix(ResearchProjectDef __instance, ref bool __result)
             {
-                __result = false;
+                if (SemiRandomResearchMod.settings.featureEnabled)
+                    __result = false;
             }
         }
     }
