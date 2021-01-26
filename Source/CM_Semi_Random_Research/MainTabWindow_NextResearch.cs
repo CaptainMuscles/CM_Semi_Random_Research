@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -35,6 +36,8 @@ namespace CM_Semi_Random_Research
 
         private static List<Building> tmpAllBuildings = new List<Building>();
 
+        private int currentRandomSeed = 0;
+
         private bool ColonistsHaveResearchBench
         {
             get
@@ -65,6 +68,8 @@ namespace CM_Semi_Random_Research
         public override void PreOpen()
         {
             base.PreOpen();
+
+            currentRandomSeed = Rand.Int;
 
             ResearchTracker researchTracker = Current.Game.World.GetComponent<ResearchTracker>();
 
@@ -122,11 +127,12 @@ namespace CM_Semi_Random_Research
             float currentY = 0f;
             float mainLabelHeight = 50.0f;
             float gapHeight = 10.0f;
-            float buttonHeight = 50.0f;
+            float researchProjectGapHeight = 32.0f;
+            float buttonHeight = 94.0f;
 
             float rerollButtonHeight = 40.0f;
 
-            float footerHeight = (gapHeight + buttonHeight);
+            float footerHeight = (gapHeight + rerollButtonHeight);
 
             if (researchTracker != null && researchTracker.CanReroll)
                 footerHeight += (gapHeight + rerollButtonHeight);
@@ -147,8 +153,8 @@ namespace CM_Semi_Random_Research
             foreach (ResearchProjectDef projectDef in currentAvailableProjects)
             {
                 Rect buttonRect = new Rect(0f, currentY, scrollViewRect.width, buttonHeight);
-                DrawResearchButton(buttonRect, projectDef);
-                currentY += buttonHeight + gapHeight;
+                DrawResearchButton(ref buttonRect, projectDef);
+                currentY += buttonHeight + researchProjectGapHeight;
             }
 
             currentY = (leftScrollViewHeight = currentY + 3f);
@@ -179,12 +185,28 @@ namespace CM_Semi_Random_Research
             GUI.EndGroup();
         }
 
-        private void DrawResearchButton(Rect drawRect, ResearchProjectDef projectDef)
+        private void DrawResearchButton(ref Rect drawRect, ResearchProjectDef projectDef)
         {
-            TextAnchor startingTextAnchor = Text.Anchor;
+            float iconSize = 64.0f;
+            float innerMargin = Margin;
 
+            // Remember starting text settings
+            TextAnchor startingTextAnchor = Text.Anchor;
+            Color startingGuiColor = GUI.color;
             Text.Font = GameFont.Small;
 
+
+            // Measure everything
+            Rect textRect = drawRect;
+            TaggedString label = projectDef.LabelCap;
+            Widgets.LabelCacheHeight(ref textRect, label, false);
+            textRect.height = textRect.height + innerMargin + innerMargin;
+
+            Rect iconRect = new Rect(drawRect.x, drawRect.y + textRect.height - 1, iconSize + innerMargin, iconSize + innerMargin);
+            drawRect.height = textRect.height + iconRect.height - 1;
+
+            
+            // Set colors
             Color backgroundColor = default(Color);
             Color textColor = Widgets.NormalOptionColor;
             Color borderColor = default(Color);
@@ -208,29 +230,65 @@ namespace CM_Semi_Random_Research
                 borderColor = TexUI.DefaultBorderResearchColor;
             }
 
-            Rect buttonRect = drawRect;
-            Rect textRect = drawRect;
-            textRect.width = textRect.width - (Margin * 2);
-            textRect.center = buttonRect.center;
 
+            // Main button background and border
+            Rect buttonRect = drawRect;
             if (Widgets.CustomButtonText(ref buttonRect, "", backgroundColor, textColor, borderColor))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
                 selectedProject = projectDef;
             }
-            TextAnchor anchor = Text.Anchor;
-            Color rememberGuiColor = GUI.color;
+
+            DrawBorderedBox(textRect, backgroundColor, borderColor);
+            DrawBorderedBox(iconRect, backgroundColor, borderColor);
+
+            // Text
+            //   Shrink text box to allow for margin
+            textRect.width = textRect.width - (innerMargin * 2);
+            textRect.center = buttonRect.center;
+            textRect.y = buttonRect.y;
+
+            //   Draw project name
             GUI.color = textColor;
             Text.Anchor = TextAnchor.MiddleLeft;
-            Widgets.Label(textRect, projectDef.LabelCap);
-
+            Widgets.Label(textRect, label);
+            //   Draw project cost
             GUI.color = textColor;
             Text.Anchor = TextAnchor.MiddleRight;
             Widgets.Label(textRect, projectDef.CostApparent.ToString());
 
-            GUI.color = rememberGuiColor;
+            
+            // Icon
+            //   Shrink icon box to allow for margin
+            Vector2 originalIconCenter = iconRect.center;
+            iconRect.width = iconSize;
+            iconRect.height = iconSize;
+            iconRect.center = originalIconCenter;
 
+            //   Draw Icon
+            Def firstUnlockable = GetFirstUnlockable(projectDef);
+            if (firstUnlockable != null)
+                Widgets.DefIcon(iconRect, firstUnlockable);
+
+
+            GUI.color = startingGuiColor;
             Text.Anchor = startingTextAnchor;
+        }
+
+        private void DrawBorderedBox(Rect rect, Color backgroundColor, Color borderColor, float borderThickness = 1f)
+        {
+            Color saveColor = GUI.color;
+
+            Rect innerRect = new Rect(rect);
+            innerRect.x += borderThickness;
+            innerRect.y += borderThickness;
+            innerRect.width -= borderThickness * 2;
+            innerRect.height -= borderThickness * 2;
+
+            Widgets.DrawRectFast(rect, borderColor);
+            Widgets.DrawRectFast(innerRect, backgroundColor);
+
+            GUI.color = saveColor;
         }
 
         private void DrawRightColumn(Rect rightRect)
@@ -493,6 +551,22 @@ namespace CM_Semi_Random_Research
                 }
             }
             return num;
+        }
+
+        private Def GetFirstUnlockable(ResearchProjectDef project)
+        {
+            List<Pair<ResearchPrerequisitesUtility.UnlockedHeader, List<Def>>> list = UnlockedDefsGroupedByPrerequisites(project);
+
+            if (list.NullOrEmpty())
+                return null;
+
+            List<Def> defList = list.First().Second;
+            if (defList.NullOrEmpty())
+                return null;
+
+            int randomIndex = Rand.RangeInclusiveSeeded(0, defList.Count - 1, currentRandomSeed);
+
+            return defList[randomIndex];
         }
 
         private float DrawUnlockableHyperlinks(Rect rect, ResearchProjectDef project)
