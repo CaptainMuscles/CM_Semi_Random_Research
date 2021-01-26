@@ -17,6 +17,10 @@ namespace CM_Semi_Random_Research
 
         private float betweenColumnSpace => 24f;
 
+        private Vector2 leftScrollPosition = Vector2.zero;
+
+        private float leftScrollViewHeight;
+
         private Vector2 rightScrollPosition = Vector2.zero;
 
         private float rightScrollViewHeight;
@@ -73,6 +77,20 @@ namespace CM_Semi_Random_Research
             cachedUnlockedDefsGroupedByPrerequisites = null;
         }
 
+        public override void WindowUpdate()
+        {
+            base.WindowUpdate();
+
+            ResearchTracker researchTracker = Current.Game.World.GetComponent<ResearchTracker>();
+
+            if (researchTracker != null)
+            {
+                currentAvailableProjects = researchTracker.GetCurrentlyAvailableProjects();
+                if (!currentAvailableProjects.Contains(selectedProject))
+                    selectedProject = researchTracker.CurrentProject;
+            }
+        }
+
         public override void DoWindowContents(Rect rect)
         {
             base.DoWindowContents(rect);
@@ -96,21 +114,52 @@ namespace CM_Semi_Random_Research
 
         private void DrawLeftColumn(Rect leftRect)
         {
-            Listing_Standard leftListing = new Listing_Standard();
-            leftListing.Begin(leftRect);
+            Rect position = leftRect;
+            GUI.BeginGroup(position);
 
+            float currentY = 0f;
+            float mainLabelHeight = 50.0f;
+            float gapHeight = 10.0f;
+            float buttonHeight = 50.0f;
+
+            float footerHeight = (gapHeight + buttonHeight);
+
+            // Selected project name
             Text.Font = GameFont.Medium;
-            leftListing.Label("CM_Semi_Random_Research_Available_Projects".Translate());
-            leftListing.GapLine();
+            GenUI.SetLabelAlign(TextAnchor.MiddleLeft);
+            Rect mainLabelRect = new Rect(0f, currentY, position.width, mainLabelHeight);
+            Widgets.LabelCacheHeight(ref mainLabelRect, "CM_Semi_Random_Research_Available_Projects".Translate());
+            GenUI.ResetLabelAlign();
+            currentY += mainLabelHeight;
+
+            Rect scrollOutRect = new Rect(0f, currentY, position.width, position.height - (footerHeight + currentY));
+            Rect scrollViewRect = new Rect(0f, currentY, scrollOutRect.width - 16f, leftScrollViewHeight);
+
+            Widgets.BeginScrollView(scrollOutRect, ref leftScrollPosition, scrollViewRect);
 
             foreach (ResearchProjectDef projectDef in currentAvailableProjects)
             {
-                Rect buttonRect = leftListing.GetRect(50.0f);
+                Rect buttonRect = new Rect(0f, currentY, scrollViewRect.width, buttonHeight);
                 DrawResearchButton(buttonRect, projectDef);
-                leftListing.Gap();
+                currentY += buttonHeight + gapHeight;
             }
 
-            leftListing.End();
+            currentY = (leftScrollViewHeight = currentY + 3f);
+
+            Widgets.EndScrollView();
+
+            ResearchTracker researchTracker = Current.Game.World.GetComponent<ResearchTracker>();
+
+            if (researchTracker != null)
+            {
+                Widgets.DrawLineHorizontal(leftRect.xMin, scrollOutRect.yMax + gapHeight, position.width);
+                Rect autoResearchCheckRect = new Rect(0f, scrollOutRect.yMax + gapHeight + gapHeight, position.width, 0f);
+                TaggedString translatedAutoResearchString = "CM_Semi_Random_Research_Auto_Research_Label".Translate();
+                Widgets.LabelCacheHeight(ref autoResearchCheckRect, translatedAutoResearchString);
+                Widgets.CheckboxLabeled(autoResearchCheckRect, translatedAutoResearchString, ref researchTracker.autoResearch);
+            }
+
+            GUI.EndGroup();
         }
 
         private void DrawResearchButton(Rect drawRect, ResearchProjectDef projectDef)
@@ -146,24 +195,12 @@ namespace CM_Semi_Random_Research
             Rect textRect = drawRect;
             textRect.width = textRect.width - (Margin * 2);
             textRect.center = buttonRect.center;
-            //buttonRect.width = 140.0f;
-            //buttonRect.center = drawRect.center;
 
-            //Rect labelOffsetRect = buttonRect;
-            //Widgets.LabelCacheHeight(ref labelOffsetRect, " ");
             if (Widgets.CustomButtonText(ref buttonRect, "", backgroundColor, textColor, borderColor))
             {
                 SoundDefOf.Click.PlayOneShotOnCamera();
                 selectedProject = projectDef;
             }
-
-            //labelOffsetRect.y = buttonRect.y + buttonRect.height - labelOffsetRect.height;
-            //Rect costRect = labelOffsetRect;
-            //costRect.x += 10f;
-            //costRect.width = costRect.width / 2f - 10f;
-            //Rect techPrintRect = costRect;
-            //techPrintRect.x += costRect.width;
-
             TextAnchor anchor = Text.Anchor;
             Color rememberGuiColor = GUI.color;
             GUI.color = textColor;
@@ -174,12 +211,6 @@ namespace CM_Semi_Random_Research
             Text.Anchor = TextAnchor.MiddleRight;
             Widgets.Label(textRect, projectDef.CostApparent.ToString());
 
-            //if (projectDef.TechprintCount > 0)
-            //{
-            //    GUI.color = FulfilledPrerequisiteColor;
-            //    Text.Anchor = TextAnchor.MiddleRight;
-            //    Widgets.Label(techPrintRect, $"{projectDef.TechprintsApplied.ToString()} / {projectDef.TechprintCount.ToString()}");
-            //}
             GUI.color = rememberGuiColor;
 
             Text.Anchor = startingTextAnchor;
@@ -195,16 +226,14 @@ namespace CM_Semi_Random_Research
                 float gapHeight = 10.0f;
                 float startResearchButtonHeight = 68.0f;
                 float progressBarHeight = 35.0f;
-                float detailsAreaHeight = position.height - (gapHeight + startResearchButtonHeight + gapHeight + progressBarHeight);
+                float footerHeight = (gapHeight + startResearchButtonHeight + gapHeight + progressBarHeight);
 
                 float debugFinishResearchNowButtonHeight = 30.0f;
 
                 float currentY = 0f;
 
-                Rect outRect = new Rect(0f, 0f, position.width, detailsAreaHeight);
+                Rect outRect = new Rect(0f, 0f, position.width, position.height - footerHeight);
                 Rect viewRect = new Rect(0f, 0f, outRect.width - 16f, rightScrollViewHeight);
-
-                Log.Message(outRect.yMax.ToString());
 
                 Widgets.BeginScrollView(outRect, ref rightScrollPosition, viewRect);
 
@@ -214,10 +243,10 @@ namespace CM_Semi_Random_Research
                 Rect projectNameRect = new Rect(0f, currentY, viewRect.width, projectNameHeight);
                 Widgets.LabelCacheHeight(ref projectNameRect, selectedProject.LabelCap);
                 GenUI.ResetLabelAlign();
+                currentY += projectNameRect.height;
 
                 // Selected project description
                 Text.Font = GameFont.Small;
-                currentY += projectNameRect.height;
                 Rect projectDescriptionRect = new Rect(0f, currentY, viewRect.width, 0f);
                 Widgets.LabelCacheHeight(ref projectDescriptionRect, selectedProject.description);
                 currentY += projectDescriptionRect.height;
@@ -237,11 +266,11 @@ namespace CM_Semi_Random_Research
                 }
 
                 // Prerequisites
-                currentY += DrawResearchPrereqs(rect: new Rect(0f, currentY, viewRect.width, detailsAreaHeight), project: selectedProject);
-                currentY += DrawResearchBenchRequirements(rect: new Rect(0f, currentY, viewRect.width, detailsAreaHeight), project: selectedProject);
+                currentY += DrawResearchPrereqs(rect: new Rect(0f, currentY, viewRect.width, outRect.height), project: selectedProject);
+                currentY += DrawResearchBenchRequirements(rect: new Rect(0f, currentY, viewRect.width, outRect.height), project: selectedProject);
 
                 // Unlockables
-                Rect projectUnlockablesRect = new Rect(0f, currentY, viewRect.width, detailsAreaHeight);
+                Rect projectUnlockablesRect = new Rect(0f, currentY, viewRect.width, footerHeight);
                 currentY += DrawUnlockableHyperlinks(projectUnlockablesRect, selectedProject);
                 currentY = (rightScrollViewHeight = currentY + 3f);
 
@@ -249,7 +278,7 @@ namespace CM_Semi_Random_Research
 
                 // Start research button
                 
-                Rect startResearchButtonRect = new Rect(0f, detailsAreaHeight + gapHeight, position.width, startResearchButtonHeight);
+                Rect startResearchButtonRect = new Rect(0f, outRect.height + gapHeight, position.width, startResearchButtonHeight);
                 if (selectedProject.CanStartProject() && selectedProject != Find.ResearchManager.currentProj)
                 {
                     if (Widgets.ButtonText(startResearchButtonRect, "Research".Translate()))

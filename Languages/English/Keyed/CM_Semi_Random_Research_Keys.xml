@@ -4,4 +4,6 @@
   
   <CM_Semi_Random_Research_Setting_Available_Projects_Count_Label>Available project count</CM_Semi_Random_Research_Setting_Available_Projects_Count_Label>
   <CM_Semi_Random_Research_Setting_Available_Projects_Count_Description>Determines the number of available research projects the player may select from</CM_Semi_Random_Research_Setting_Available_Projects_Count_Description>
+  
+  <CM_Semi_Random_Research_Auto_Research_Label>Select research automatically</CM_Semi_Random_Research_Auto_Research_Label>
 </LanguageData>

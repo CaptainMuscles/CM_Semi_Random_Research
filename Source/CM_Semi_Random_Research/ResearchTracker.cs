@@ -18,6 +18,8 @@ namespace CM_Semi_Random_Research
 
         public ResearchProjectDef CurrentProject => currentProject;
 
+        public bool autoResearch = false;
+
         public ResearchTracker(World world) : base(world)
         {
 
@@ -29,6 +31,7 @@ namespace CM_Semi_Random_Research
 
             Scribe_Collections.Look(ref currentAvailableProjects, "currentAvailableProjects", LookMode.Def);
             Scribe_Defs.Look(ref currentProject, "currentProject");
+            Scribe_Values.Look(ref autoResearch, "autoResearch", false);
         }
 
         public override void WorldComponentTick()
@@ -37,12 +40,31 @@ namespace CM_Semi_Random_Research
 
             ResearchProjectDef activeProject = Find.ResearchManager.currentProj;
 
+            if (currentProject == null || currentProject.IsFinished)
+            {
+                if (autoResearch)
+                    currentProject = GetCurrentlyAvailableProjects().FirstOrDefault();
+                else
+                    currentProject = null;
+            }
+
             if (activeProject != currentProject)
-                Find.ResearchManager.currentProj = currentProject;
+            {
+                if (currentProject == null && currentAvailableProjects.Contains(activeProject))
+                {
+                    currentProject = activeProject;
+                }
+                else
+                {
+                    Find.ResearchManager.currentProj = currentProject;
+                }
+            }
         }
 
         public List<ResearchProjectDef> GetCurrentlyAvailableProjects()
         {
+            currentAvailableProjects = currentAvailableProjects.Where(projectDef => !projectDef.IsFinished).ToList();
+
             int numberOfMissingProjects = SemiRandomResearchMod.settings.availableProjectCount - currentAvailableProjects.Count;
             if (numberOfMissingProjects > 0)
             {

@@ -15,7 +15,7 @@ namespace CM_Semi_Random_Research
     {
         public static bool CanStartProject(this ResearchProjectDef researchProject)
         {
-            if (!researchProject.IsFinished && researchProject.PrerequisitesCompleted && researchProject.TechprintRequirementMet)
+            if (Find.ResearchManager.currentProj == null && !researchProject.IsFinished && researchProject.PrerequisitesCompleted && researchProject.TechprintRequirementMet)
             {
                 if (researchProject.requiredResearchBuilding != null)
                 {
