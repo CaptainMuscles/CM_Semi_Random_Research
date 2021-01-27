@@ -43,32 +43,32 @@ namespace CM_Semi_Random_Research
         {
             base.WorldComponentTick();
 
-            ResearchProjectDef activeProject = Find.ResearchManager.currentProj;
-
             if (currentProject != null && currentProject.IsFinished)
                 rerolled = false;
 
             if (currentProject == null || currentProject.IsFinished)
             {
                 if (autoResearch)
-                    currentProject = GetCurrentlyAvailableProjects().FirstOrDefault();
-                else
-                    currentProject = null;
+                    SetCurrentProject(GetCurrentlyAvailableProjects().FirstOrDefault());
+                else if (currentProject != null && currentProject.IsFinished)
+                    SetCurrentProject(null);
             }
+
+            ResearchProjectDef activeProject = Find.ResearchManager.currentProj;
 
             if (activeProject != currentProject)
             {
                 if (!SemiRandomResearchMod.settings.featureEnabled)
                 {
-                    currentProject = activeProject;
+                    SetCurrentProject(activeProject);
                 }
                 else if (currentProject == null && currentAvailableProjects.Contains(activeProject))
                 {
-                    currentProject = activeProject;
+                    SetCurrentProject(activeProject);
                 }
                 else
                 {
-                    Find.ResearchManager.currentProj = currentProject;
+                    SetCurrentProject(currentProject);
                 }
             }
         }
@@ -79,6 +79,7 @@ namespace CM_Semi_Random_Research
 
             if (!SemiRandomResearchMod.settings.rerollAllEveryTime || currentProject == null || currentProject.IsFinished)
             {
+                //Log.Message("Replacing missing projects. reroll: " + SemiRandomResearchMod.settings.rerollAllEveryTime.ToString() + " - currentProject null: " + (currentProject == null).ToString());
                 int numberOfMissingProjects = SemiRandomResearchMod.settings.availableProjectCount - currentAvailableProjects.Count;
                 if (numberOfMissingProjects > 0)
                 {
@@ -98,9 +99,15 @@ namespace CM_Semi_Random_Research
 
         public void SetCurrentProject(ResearchProjectDef newCurrentProject)
         {
-            currentProject = newCurrentProject;
+            //Log.Message("SetCurrentProject: " + ((newCurrentProject == null) ? "null" : newCurrentProject.ToString()));
 
-            if (SemiRandomResearchMod.settings.rerollAllEveryTime)
+            currentProject = newCurrentProject;
+            Find.ResearchManager.currentProj = currentProject;
+
+            if (currentProject != null && !SemiRandomResearchMod.settings.featureEnabled && !currentAvailableProjects.Contains(currentProject))
+                currentAvailableProjects.Add(currentProject);
+
+            if (currentProject != null && SemiRandomResearchMod.settings.rerollAllEveryTime)
                 currentAvailableProjects = currentAvailableProjects.Where(projectDef => projectDef == currentProject).ToList();
         }
 
