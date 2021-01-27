@@ -207,8 +207,8 @@ namespace CM_Semi_Random_Research
 
             Rect detailsRect = new Rect(drawRect.x + iconRect.width + innerMargin,
                                         drawRect.y + textRect.height + innerMargin,
-                                        drawRect.width - (iconRect.width + innerMargin),
-                                        drawRect.height - (textRect.height + innerMargin));
+                                        drawRect.width - (iconRect.width + innerMargin + innerMargin),
+                                        drawRect.height - (textRect.height + innerMargin + innerMargin));
 
             // Set colors
             Color backgroundColor = default(Color);
@@ -276,7 +276,8 @@ namespace CM_Semi_Random_Research
 
 
             List<string> unlockedProjectLabels = DefDatabase<ResearchProjectDef>.AllDefsListForReading
-                                                                                .Where(def => (def.prerequisites       != null && def.prerequisites.Contains(projectDef)) ||
+                                                                                .Where(def => !def.IsFinished &&
+                                                                                              (def.prerequisites       != null && def.prerequisites.Contains(projectDef)) ||
                                                                                               (def.hiddenPrerequisites != null && def.hiddenPrerequisites.Contains(projectDef)))
                                                                                 .Select(def => def.label)
                                                                                 .ToList();
