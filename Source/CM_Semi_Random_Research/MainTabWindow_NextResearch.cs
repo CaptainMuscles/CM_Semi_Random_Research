@@ -198,14 +198,18 @@ namespace CM_Semi_Random_Research
 
             // Measure everything
             Rect textRect = drawRect;
-            TaggedString label = projectDef.LabelCap;
-            Widgets.LabelCacheHeight(ref textRect, label, false);
+            TaggedString projectLabel = projectDef.LabelCap;
+            Widgets.LabelCacheHeight(ref textRect, projectLabel, false);
             textRect.height = textRect.height + innerMargin + innerMargin;
 
             Rect iconRect = new Rect(drawRect.x, drawRect.y + textRect.height - 1, iconSize + innerMargin, iconSize + innerMargin);
             drawRect.height = textRect.height + iconRect.height - 1;
 
-            
+            Rect detailsRect = new Rect(drawRect.x + iconRect.width + innerMargin,
+                                        drawRect.y + textRect.height + innerMargin,
+                                        drawRect.width - (iconRect.width + innerMargin),
+                                        drawRect.height - (textRect.height + innerMargin));
+
             // Set colors
             Color backgroundColor = default(Color);
             Color textColor = Widgets.NormalOptionColor;
@@ -251,7 +255,7 @@ namespace CM_Semi_Random_Research
             //   Draw project name
             GUI.color = textColor;
             Text.Anchor = TextAnchor.MiddleLeft;
-            Widgets.Label(textRect, label);
+            Widgets.Label(textRect, projectLabel);
             //   Draw project cost
             GUI.color = textColor;
             Text.Anchor = TextAnchor.MiddleRight;
@@ -269,6 +273,33 @@ namespace CM_Semi_Random_Research
             Def firstUnlockable = GetFirstUnlockable(projectDef);
             if (firstUnlockable != null)
                 Widgets.DefIcon(iconRect, firstUnlockable);
+
+
+            List<string> unlockedProjectLabels = DefDatabase<ResearchProjectDef>.AllDefsListForReading
+                                                                                .Where(def => (def.prerequisites       != null && def.prerequisites.Contains(projectDef)) ||
+                                                                                              (def.hiddenPrerequisites != null && def.hiddenPrerequisites.Contains(projectDef)))
+                                                                                .Select(def => def.label)
+                                                                                .ToList();
+
+            if (unlockedProjectLabels.Count > 0)
+            {
+                Text.Anchor = TextAnchor.UpperLeft;
+                string unlocksResearchString = "CM_Semi_Random_Unlocks_Research".Translate();
+                string detailsLabel = "CM_Semi_Random_Unlocks_Research".Translate();
+
+                for (int i = 0; i < unlockedProjectLabels.Count; ++i)
+                {
+                    detailsLabel = detailsLabel + unlockedProjectLabels[i];
+                    if (i < unlockedProjectLabels.Count - 1)
+                        detailsLabel = detailsLabel + ", ";
+                }
+
+                GUI.color = textColor;
+                Widgets.Label(detailsRect, detailsLabel);
+
+                GUI.color = Color.white;
+                Widgets.Label(detailsRect, unlocksResearchString);
+            }
 
 
             GUI.color = startingGuiColor;
