@@ -1,3 +1,9 @@
+## [1.0.1] - 2021-01-28
+
+### Changed
+- 'Research Finished' dialog's 'Research Screen' link opens 'Next Research' tab unless 'Prohibit Normal Project Selection' setting is disabled
+
+
 ## [1.0.0] - 2021-01-27
 
 ### Added
