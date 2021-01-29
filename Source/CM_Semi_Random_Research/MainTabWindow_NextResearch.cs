@@ -10,6 +10,7 @@ using Verse.Sound;
 
 namespace CM_Semi_Random_Research
 {
+    [StaticConstructorOnStartup]
     public class MainTabWindow_NextResearch : MainTabWindow
     {
         protected ResearchProjectDef selectedProject;
