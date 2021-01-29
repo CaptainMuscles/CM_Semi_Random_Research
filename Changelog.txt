@@ -1,3 +1,12 @@
+## [1.0.2] - 2021-01-29
+
+### Added
+- New research button shows research progress
+- New research button now replaces existing button unless 'Prohibit Normal Research Selection' is enabled in settings
+- Small buttons in the new and original research windows to switch between the two regardless of settings
+- Patch for Vanilla Textures Expanded to use an icon for the new research button
+
+
 ## [1.0.1] - 2021-01-28
 
 ### Changed
