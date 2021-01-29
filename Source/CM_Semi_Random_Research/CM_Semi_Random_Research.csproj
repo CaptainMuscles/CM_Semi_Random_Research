@@ -65,6 +65,7 @@
     <Compile Include="MainTabsRoot_Patches.cs" />
     <Compile Include="MainTabWindow_NextResearch.cs" />
     <Compile Include="DiaOption_Patches.cs" />
+    <Compile Include="MainTabWindow_Research_Patches.cs" />
     <Compile Include="ResearchProjectDefExtensions.cs" />
     <Compile Include="ResearchProjectDef_Patches.cs" />
     <Compile Include="ResearchTracker.cs" />

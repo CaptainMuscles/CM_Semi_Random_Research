@@ -33,6 +33,8 @@ namespace CM_Semi_Random_Research
 
         private static readonly Texture2D ResearchBarBGTex = SolidColorMaterials.NewSolidColorTexture(new Color(0.1f, 0.1f, 0.1f));
 
+        private static readonly Texture2D ResearchButtonIcon = ContentFinder<Texture2D>.Get("UI/Buttons/MainButtons/CM_Semi_Random_Research_ResearchTree");
+
         private Dictionary<ResearchProjectDef, List<Pair<ResearchPrerequisitesUtility.UnlockedHeader, List<Def>>>> cachedUnlockedDefsGroupedByPrerequisites;
 
         private static List<Building> tmpAllBuildings = new List<Building>();
@@ -162,8 +164,6 @@ namespace CM_Semi_Random_Research
 
             Widgets.EndScrollView();
 
-            
-
             if (researchTracker != null)
             {
                 Widgets.DrawLineHorizontal(leftRect.xMin, scrollOutRect.yMax + gapHeight, position.width);
@@ -182,6 +182,8 @@ namespace CM_Semi_Random_Research
                     }
                 }
             }
+
+            DrawGoToTechTreeButton(position);
 
             GUI.EndGroup();
         }
@@ -322,6 +324,33 @@ namespace CM_Semi_Random_Research
             Widgets.DrawRectFast(innerRect, backgroundColor);
 
             GUI.color = saveColor;
+        }
+
+        private void DrawGoToTechTreeButton(Rect mainRect)
+        {
+            float buttonSize = 32.0f;
+            Rect buttonRect = new Rect(mainRect.xMax - buttonSize - Margin, mainRect.yMin, buttonSize, buttonSize);
+
+            // I'm just going to check both buttons in case either snatches up the event
+            bool pressedButton1 = Widgets.ButtonTextSubtle(buttonRect, "");
+            bool pressedButton2 = Widgets.ButtonImage(buttonRect, ResearchButtonIcon);
+
+            if (pressedButton1 || pressedButton2)
+            {
+                SoundDefOf.ResearchStart.PlayOneShotOnCamera();
+
+                MainTabWindow currentWindow = Find.WindowStack.WindowOfType<MainTabWindow>();
+                MainTabWindow newWindow = MainButtonDefOf.Research.TabWindow;
+
+                //Log.Message(string.Format("Has currentWindow {0}, has newWindow {1}", (currentWindow != null).ToString(), (newWindow != null).ToString()));
+
+                if (currentWindow != null && newWindow != null)
+                {
+                    Find.WindowStack.TryRemove(currentWindow, false);
+                    Find.WindowStack.Add(newWindow);
+                    SoundDefOf.TabOpen.PlayOneShotOnCamera();
+                }
+            }
         }
 
         private void DrawRightColumn(Rect rightRect)
