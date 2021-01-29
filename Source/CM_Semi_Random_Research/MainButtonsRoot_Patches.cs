@@ -20,8 +20,13 @@ namespace CM_Semi_Random_Research
             [HarmonyPostfix]
             public static void Postfix(ref List<MainButtonDef> ___allButtonsInOrder)
             {
-                if (___allButtonsInOrder != null && !SemiRandomResearchMod.settings.showResearchButton)
-                    ___allButtonsInOrder = ___allButtonsInOrder.Where(button => button != MainButtonDefOf.Research).ToList();
+                if (___allButtonsInOrder != null)
+                {
+                    if (SemiRandomResearchMod.settings.featureEnabled)
+                        ___allButtonsInOrder = ___allButtonsInOrder.Where(button => button != MainButtonDefOf.Research).ToList();
+                    else
+                        ___allButtonsInOrder = ___allButtonsInOrder.Where(button => button != SemiRandomResearchDefOf.CM_Semi_Random_Research_MainButton_Next_Research).ToList();
+                }
             }
         }
     }

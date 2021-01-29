@@ -21,7 +21,7 @@ namespace CM_Semi_Random_Research
         public bool featureEnabled = true;
         public bool rerollAllEveryTime = true;
 
-        public bool showResearchButton = true;
+        //public bool showResearchButton = true;
 
         public ManualReroll allowManualReroll = ManualReroll.None;
 
@@ -34,7 +34,7 @@ namespace CM_Semi_Random_Research
             Scribe_Values.Look(ref featureEnabled, "featureEnabled", true);
             Scribe_Values.Look(ref rerollAllEveryTime, "rerollAllEveryTime", true);
 
-            Scribe_Values.Look(ref showResearchButton, "showResearchButton", true);
+            //Scribe_Values.Look(ref showResearchButton, "showResearchButton", true);
 
             Scribe_Values.Look(ref allowManualReroll, "allowManualReroll", ManualReroll.None);
 
@@ -43,7 +43,7 @@ namespace CM_Semi_Random_Research
 
         public void DoSettingsWindowContents(Rect inRect)
         {
-            bool showResearchButtonWas = showResearchButton;
+            bool showResearchButtonWas = featureEnabled;
 
             string intEditBuffer = availableProjectCount.ToString();
             Listing_Standard listing_Standard = new Listing_Standard();
@@ -53,7 +53,7 @@ namespace CM_Semi_Random_Research
 
             listing_Standard.CheckboxLabeled("CM_Semi_Random_Research_Setting_Feature_Enabled_Label".Translate(), ref featureEnabled, "CM_Semi_Random_Research_Setting_Feature_Enabled_Description".Translate());
             listing_Standard.CheckboxLabeled("CM_Semi_Random_Research_Setting_Reroll_All_Every_Time_Label".Translate(), ref rerollAllEveryTime, "CM_Semi_Random_Research_Setting_Reroll_All_Every_Time_Description".Translate());
-            listing_Standard.CheckboxLabeled("CM_Semi_Random_Research_Setting_Show_Research_Button_Label".Translate(), ref showResearchButton, "CM_Semi_Random_Research_Setting_Show_Research_Button_Description".Translate());
+            //listing_Standard.CheckboxLabeled("CM_Semi_Random_Research_Setting_Show_Research_Button_Label".Translate(), ref showResearchButton, "CM_Semi_Random_Research_Setting_Show_Research_Button_Description".Translate());
 
 
             listing_Standard.GapLine();
@@ -74,7 +74,7 @@ namespace CM_Semi_Random_Research
 
             listing_Standard.End();
 
-            if (showResearchButton != showResearchButtonWas)
+            if (featureEnabled != showResearchButtonWas)
                 UpdateShowResearchButton();
         }
 
@@ -95,17 +95,14 @@ namespace CM_Semi_Random_Research
                     FieldInfo allButtonsInOrderField = mainButtonsRoot.GetType().GetField("allButtonsInOrder", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                     List<MainButtonDef> mainButtons = allButtonsInOrderField.GetValue(mainButtonsRoot) as List<MainButtonDef>;
 
-                    // Put it back or
-                    if (showResearchButton && mainButtons.Find(button => button == MainButtonDefOf.Research) == null)
-                    {
-                        mainButtons.Add(MainButtonDefOf.Research);
-                        mainButtons.Sort((a, b) => a.order - b.order);
-                    }
-                    // Take it away
-                    else if (!showResearchButton)
-                    {
-                        mainButtons = mainButtons.Where(button => button != MainButtonDefOf.Research).ToList();
-                    }
+                    MainButtonDef buttonToUse = SemiRandomResearchDefOf.CM_Semi_Random_Research_MainButton_Next_Research;
+                    if (!featureEnabled)
+                        buttonToUse = MainButtonDefOf.Research;
+
+                    // Pull both of the buttons out to be sure, then put the correct one back in
+                    mainButtons = mainButtons.Where(button => button != MainButtonDefOf.Research && button != SemiRandomResearchDefOf.CM_Semi_Random_Research_MainButton_Next_Research).ToList();
+                    mainButtons.Add(buttonToUse);
+                    mainButtons.Sort((a, b) => a.order - b.order);
 
                     allButtonsInOrderField.SetValue(mainButtonsRoot, mainButtons);
                 }
