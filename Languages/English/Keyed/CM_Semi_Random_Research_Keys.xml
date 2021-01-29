@@ -6,6 +6,9 @@
   <CM_Semi_Random_Research_Setting_Reroll_All_Every_Time_Label>Reroll all choices every time</CM_Semi_Random_Research_Setting_Reroll_All_Every_Time_Label>
   <CM_Semi_Random_Research_Setting_Reroll_All_Every_Time_Description>If disabled, projects that are not selected will stay in the list until researched.</CM_Semi_Random_Research_Setting_Reroll_All_Every_Time_Description>
   
+  <CM_Semi_Random_Research_Setting_Show_Research_Button_Label>Show research button</CM_Semi_Random_Research_Setting_Show_Research_Button_Label>
+  <CM_Semi_Random_Research_Setting_Show_Research_Button_Description>If disabled, the vanilla research button will be hidden.</CM_Semi_Random_Research_Setting_Show_Research_Button_Description>
+  
   <CM_Semi_Random_Research_Setting_Manual_Reroll_Label>Allow manual rerolls</CM_Semi_Random_Research_Setting_Manual_Reroll_Label>
   
   <CM_Semi_Random_Research_Setting_No_Manual_Reroll_Label>Never</CM_Semi_Random_Research_Setting_No_Manual_Reroll_Label>

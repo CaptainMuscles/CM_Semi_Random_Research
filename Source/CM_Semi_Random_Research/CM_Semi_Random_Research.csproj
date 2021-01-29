@@ -61,6 +61,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MainButtonsRoot_Patches.cs" />
     <Compile Include="MainTabsRoot_Patches.cs" />
     <Compile Include="MainTabWindow_NextResearch.cs" />
     <Compile Include="DiaOption_Patches.cs" />

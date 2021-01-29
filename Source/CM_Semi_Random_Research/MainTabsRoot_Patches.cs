@@ -22,7 +22,9 @@ namespace CM_Semi_Random_Research
                 if (tab == null)
                     return;
 
-                if (SemiRandomResearchMod.settings.featureEnabled && DiaOption_Patches.DiaOption_FinishProject.finishingProject && tab == MainButtonDefOf.Research)
+                if (tab == MainButtonDefOf.Research && 
+                   (!SemiRandomResearchMod.settings.showResearchButton || 
+                   (SemiRandomResearchMod.settings.featureEnabled && DiaOption_Patches.DiaOption_FinishProject.finishingProject)))
                     tab = SemiRandomResearchDefOf.CM_Semi_Random_Research_MainButton_Next_Research;
             }
         }

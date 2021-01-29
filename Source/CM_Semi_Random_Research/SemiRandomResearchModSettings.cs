@@ -1,4 +1,8 @@
-﻿using HarmonyLib;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
+using HarmonyLib;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -17,6 +21,8 @@ namespace CM_Semi_Random_Research
         public bool featureEnabled = true;
         public bool rerollAllEveryTime = true;
 
+        public bool showResearchButton = true;
+
         public ManualReroll allowManualReroll = ManualReroll.None;
 
         public int availableProjectCount = 3;
@@ -28,6 +34,8 @@ namespace CM_Semi_Random_Research
             Scribe_Values.Look(ref featureEnabled, "featureEnabled", true);
             Scribe_Values.Look(ref rerollAllEveryTime, "rerollAllEveryTime", true);
 
+            Scribe_Values.Look(ref showResearchButton, "showResearchButton", true);
+
             Scribe_Values.Look(ref allowManualReroll, "allowManualReroll", ManualReroll.None);
 
             Scribe_Values.Look(ref availableProjectCount, "availableProjectCount", 3);
@@ -35,6 +43,8 @@ namespace CM_Semi_Random_Research
 
         public void DoSettingsWindowContents(Rect inRect)
         {
+            bool showResearchButtonWas = showResearchButton;
+
             string intEditBuffer = availableProjectCount.ToString();
             Listing_Standard listing_Standard = new Listing_Standard();
             listing_Standard.ColumnWidth = (inRect.width - 34f) / 2f;
@@ -43,6 +53,8 @@ namespace CM_Semi_Random_Research
 
             listing_Standard.CheckboxLabeled("CM_Semi_Random_Research_Setting_Feature_Enabled_Label".Translate(), ref featureEnabled, "CM_Semi_Random_Research_Setting_Feature_Enabled_Description".Translate());
             listing_Standard.CheckboxLabeled("CM_Semi_Random_Research_Setting_Reroll_All_Every_Time_Label".Translate(), ref rerollAllEveryTime, "CM_Semi_Random_Research_Setting_Reroll_All_Every_Time_Description".Translate());
+            listing_Standard.CheckboxLabeled("CM_Semi_Random_Research_Setting_Show_Research_Button_Label".Translate(), ref showResearchButton, "CM_Semi_Random_Research_Setting_Show_Research_Button_Description".Translate());
+
 
             listing_Standard.GapLine();
 
@@ -61,10 +73,43 @@ namespace CM_Semi_Random_Research
             listing_Standard.IntAdjuster(ref availableProjectCount, 1, 1);
 
             listing_Standard.End();
+
+            if (showResearchButton != showResearchButtonWas)
+                UpdateShowResearchButton();
         }
 
         public void UpdateSettings()
         {
+        }
+
+        public void UpdateShowResearchButton()
+        {
+            UIRoot_Play uiRootPlay = Find.UIRoot as UIRoot_Play;
+
+            if (uiRootPlay != null)
+            {
+                MainButtonsRoot mainButtonsRoot = uiRootPlay.mainButtonsRoot;
+
+                if (mainButtonsRoot != null)
+                {
+                    FieldInfo allButtonsInOrderField = mainButtonsRoot.GetType().GetField("allButtonsInOrder", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    List<MainButtonDef> mainButtons = allButtonsInOrderField.GetValue(mainButtonsRoot) as List<MainButtonDef>;
+
+                    // Put it back or
+                    if (showResearchButton && mainButtons.Find(button => button == MainButtonDefOf.Research) == null)
+                    {
+                        mainButtons.Add(MainButtonDefOf.Research);
+                        mainButtons.Sort((a, b) => a.order - b.order);
+                    }
+                    // Take it away
+                    else if (!showResearchButton)
+                    {
+                        mainButtons = mainButtons.Where(button => button != MainButtonDefOf.Research).ToList();
+                    }
+
+                    allButtonsInOrderField.SetValue(mainButtonsRoot, mainButtons);
+                }
+            }
         }
     }
 }
