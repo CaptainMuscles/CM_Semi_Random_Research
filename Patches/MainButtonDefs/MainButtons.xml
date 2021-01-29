@@ -11,7 +11,7 @@
                 <li Class="PatchOperationAdd">
                     <xpath>/Defs/MainButtonDef[defName="CM_Semi_Random_Research_MainButton_Next_Research"]</xpath>
                     <value>
-                        <iconPath>UI/Buttons/MainButtons/IconNextResearch</iconPath>
+                        <iconPath>UI/Buttons/MainButtons/IconResearch</iconPath>
                     </value>
                 </li>
             </operations>
