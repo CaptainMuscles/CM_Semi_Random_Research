@@ -61,10 +61,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MainTabsRoot_Patches.cs" />
     <Compile Include="MainTabWindow_NextResearch.cs" />
+    <Compile Include="DiaOption_Patches.cs" />
     <Compile Include="ResearchProjectDefExtensions.cs" />
     <Compile Include="ResearchProjectDef_Patches.cs" />
     <Compile Include="ResearchTracker.cs" />
+    <Compile Include="SemiRandomResearchDefOf.cs" />
     <Compile Include="SemiRandomResearchMod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SemiRandomResearchModSettings.cs" />
