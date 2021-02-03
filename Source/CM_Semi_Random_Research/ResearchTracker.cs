@@ -83,8 +83,34 @@ namespace CM_Semi_Random_Research
                 int numberOfMissingProjects = SemiRandomResearchMod.settings.availableProjectCount - currentAvailableProjects.Count;
                 if (numberOfMissingProjects > 0)
                 {
+                    TechLevel maxTechLevel = TechLevel.Archotech;
+                    // If setting is enabled, block techs beyond player faction's tech level
+                    if (SemiRandomResearchMod.settings.restrictToFactionTechLevel)
+                        maxTechLevel = Faction.OfPlayer.def.techLevel;
+
                     List<ResearchProjectDef> allAvailableProjects = DefDatabase<ResearchProjectDef>.AllDefsListForReading
-                        .Where((ResearchProjectDef projectDef) => !currentAvailableProjects.Contains(projectDef) && projectDef.CanStartProject()).ToList();
+                        .Where((ResearchProjectDef projectDef) => !currentAvailableProjects.Contains(projectDef) && projectDef.techLevel <= maxTechLevel && projectDef.CanStartProject()).ToList();
+
+                    // Force completing lowest level if setting is enabled
+                    if (SemiRandomResearchMod.settings.forceLowestTechLevel && allAvailableProjects.Count > 0)
+                    {
+                        // Need to include the tech level of projects already in the offered list
+                        if (currentAvailableProjects.Count > 0)
+                            maxTechLevel = currentAvailableProjects.Select(projectDef => projectDef.techLevel).Max();
+
+                        allAvailableProjects = allAvailableProjects.Where(projectDef => projectDef.techLevel <= maxTechLevel).ToList();
+
+                        // Go through each tech level and select from lowest available
+                        for (TechLevel techLevel = TechLevel.Animal; techLevel <= maxTechLevel; ++techLevel)
+                        {
+                            List<ResearchProjectDef> projectsAtTechLevel = allAvailableProjects.Where(projectDef => projectDef.techLevel <= techLevel).ToList();
+                            if (projectsAtTechLevel.Count > 0)
+                            {
+                                allAvailableProjects = projectsAtTechLevel;
+                                break;
+                            }
+                        }
+                    }
 
                     if (allAvailableProjects.Count > 0)
                     {

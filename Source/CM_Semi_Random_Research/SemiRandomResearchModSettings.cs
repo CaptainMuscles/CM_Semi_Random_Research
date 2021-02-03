@@ -21,6 +21,9 @@ namespace CM_Semi_Random_Research
         public bool featureEnabled = true;
         public bool rerollAllEveryTime = true;
 
+        public bool forceLowestTechLevel = false;
+        public bool restrictToFactionTechLevel = false;
+
         //public bool showResearchButton = true;
 
         public ManualReroll allowManualReroll = ManualReroll.None;
@@ -39,6 +42,9 @@ namespace CM_Semi_Random_Research
             Scribe_Values.Look(ref allowManualReroll, "allowManualReroll", ManualReroll.None);
 
             Scribe_Values.Look(ref availableProjectCount, "availableProjectCount", 3);
+
+            Scribe_Values.Look(ref forceLowestTechLevel, "forceLowestTechLevel", false);
+            Scribe_Values.Look(ref restrictToFactionTechLevel, "restrictToFactionTechLevel", false);
         }
 
         public void DoSettingsWindowContents(Rect inRect)
@@ -71,6 +77,10 @@ namespace CM_Semi_Random_Research
             listing_Standard.Label("CM_Semi_Random_Research_Setting_Available_Projects_Count_Label".Translate(), -1, "CM_Semi_Random_Research_Setting_Available_Projects_Count_Description".Translate());
             listing_Standard.Label(availableProjectCount.ToString());
             listing_Standard.IntAdjuster(ref availableProjectCount, 1, 1);
+
+            listing_Standard.GapLine();
+            listing_Standard.CheckboxLabeled("CM_Semi_Random_Research_Setting_Force_Lowest_Tech_Level_Label".Translate(), ref forceLowestTechLevel, "CM_Semi_Random_Research_Setting_Force_Lowest_Tech_Level_Description".Translate());
+            listing_Standard.CheckboxLabeled("CM_Semi_Random_Research_Setting_Restrict_To_Faction_Tech_Level_Label".Translate(), ref restrictToFactionTechLevel, "CM_Semi_Random_Research_Setting_Restrict_To_Faction_Tech_Level_Description".Translate());
 
             listing_Standard.End();
 

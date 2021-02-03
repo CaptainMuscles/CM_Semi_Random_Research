@@ -1,3 +1,10 @@
+## [1.0.4] - 2021-02-02
+
+### Added
+- Setting to require all projects of one level to be complete before continuing to the next (off by default).
+- Setting to only allow access to projects of the player faction's tech level or below (off by default).
+
+
 ## [1.0.3] - 2021-01-30
 
 ### Changed
