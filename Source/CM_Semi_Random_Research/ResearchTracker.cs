@@ -83,44 +83,70 @@ namespace CM_Semi_Random_Research
                 int numberOfMissingProjects = SemiRandomResearchMod.settings.availableProjectCount - currentAvailableProjects.Count;
                 if (numberOfMissingProjects > 0)
                 {
-                    TechLevel maxTechLevel = TechLevel.Archotech;
-                    // If setting is enabled, block techs beyond player faction's tech level
-                    if (SemiRandomResearchMod.settings.restrictToFactionTechLevel)
-                        maxTechLevel = Faction.OfPlayer.def.techLevel;
+                    ResearchProjectDef nextProject = GetResearchableProject();
 
-                    List<ResearchProjectDef> allAvailableProjects = DefDatabase<ResearchProjectDef>.AllDefsListForReading
-                        .Where((ResearchProjectDef projectDef) => !currentAvailableProjects.Contains(projectDef) && projectDef.techLevel <= maxTechLevel && projectDef.CanStartProject()).ToList();
-
-                    // Force completing lowest level if setting is enabled
-                    if (SemiRandomResearchMod.settings.forceLowestTechLevel && allAvailableProjects.Count > 0)
+                    while (nextProject != null && numberOfMissingProjects > 0)
                     {
-                        // Need to include the tech level of projects already in the offered list
-                        if (currentAvailableProjects.Count > 0)
-                            maxTechLevel = currentAvailableProjects.Select(projectDef => projectDef.techLevel).Max();
-
-                        allAvailableProjects = allAvailableProjects.Where(projectDef => projectDef.techLevel <= maxTechLevel).ToList();
-
-                        // Go through each tech level and select from lowest available
-                        for (TechLevel techLevel = TechLevel.Animal; techLevel <= maxTechLevel; ++techLevel)
-                        {
-                            List<ResearchProjectDef> projectsAtTechLevel = allAvailableProjects.Where(projectDef => projectDef.techLevel <= techLevel).ToList();
-                            if (projectsAtTechLevel.Count > 0)
-                            {
-                                allAvailableProjects = projectsAtTechLevel;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (allAvailableProjects.Count > 0)
-                    {
-                        allAvailableProjects.Shuffle();
-                        currentAvailableProjects.AddRange(allAvailableProjects.Take(Math.Min(numberOfMissingProjects, allAvailableProjects.Count)).ToList());
+                        numberOfMissingProjects -= 1;
+                        currentAvailableProjects.Add(nextProject);
+                        nextProject = GetResearchableProject();
                     }
                 }
             }
 
             return new List<ResearchProjectDef> (currentAvailableProjects);
+        }
+
+        private ResearchProjectDef GetResearchableProject()
+        {
+            TechLevel maxCurrentProjectTechlevel = TechLevel.Archotech;
+            // Get the max tech level of projects already in the offered list
+            if (currentAvailableProjects.Count > 0)
+                maxCurrentProjectTechlevel = currentAvailableProjects.Select(projectDef => projectDef.techLevel).Max();
+            TechLevel minCurrentProjectTechlevel = TechLevel.Archotech;
+            // Get the min tech level of projects already in the offered list
+            if (currentAvailableProjects.Count > 0)
+                minCurrentProjectTechlevel = currentAvailableProjects.Select(projectDef => projectDef.techLevel).Min();
+
+            TechLevel maxTechLevel = TechLevel.Archotech;
+            // If setting is enabled, block techs beyond player faction's tech level
+            if (SemiRandomResearchMod.settings.restrictToFactionTechLevel)
+            {
+                // *Unless we are allowed to have one
+                if (!SemiRandomResearchMod.settings.allowOneHigherTechProject || maxCurrentProjectTechlevel > Faction.OfPlayer.def.techLevel)
+                    maxTechLevel = Faction.OfPlayer.def.techLevel;
+            }
+
+            List<ResearchProjectDef> allAvailableProjects = DefDatabase<ResearchProjectDef>.AllDefsListForReading
+                .Where((ResearchProjectDef projectDef) => !currentAvailableProjects.Contains(projectDef) && projectDef.techLevel <= maxTechLevel && projectDef.CanStartProject()).ToList();
+
+            // Force completing lowest level if setting is enabled
+            if (allAvailableProjects.Count > 0 && SemiRandomResearchMod.settings.forceLowestTechLevel && (!SemiRandomResearchMod.settings.allowOneHigherTechProject || maxCurrentProjectTechlevel > minCurrentProjectTechlevel))
+            {
+                if (maxTechLevel > maxCurrentProjectTechlevel)
+                    maxTechLevel = maxCurrentProjectTechlevel;
+
+                allAvailableProjects = allAvailableProjects.Where(projectDef => projectDef.techLevel <= maxTechLevel).ToList();
+
+                // Go through each tech level and select from lowest available
+                for (TechLevel techLevel = TechLevel.Animal; techLevel <= maxTechLevel; ++techLevel)
+                {
+                    List<ResearchProjectDef> projectsAtTechLevel = allAvailableProjects.Where(projectDef => projectDef.techLevel <= techLevel).ToList();
+                    if (projectsAtTechLevel.Count > 0)
+                    {
+                        allAvailableProjects = projectsAtTechLevel;
+                        break;
+                    }
+                }
+            }
+
+            if (allAvailableProjects.Count > 0)
+            {
+                allAvailableProjects.Shuffle();
+                return allAvailableProjects.First();
+            }
+
+            return null;
         }
 
         public void SetCurrentProject(ResearchProjectDef newCurrentProject)

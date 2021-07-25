@@ -28,6 +28,9 @@
   
   <CM_Semi_Random_Research_Setting_Restrict_To_Faction_Tech_Level_Label>Restrict to faction tech level</CM_Semi_Random_Research_Setting_Restrict_To_Faction_Tech_Level_Label>
   <CM_Semi_Random_Research_Setting_Restrict_To_Faction_Tech_Level_Description>If selected, only options at or below the player faction's tech level will be offered.</CM_Semi_Random_Research_Setting_Restrict_To_Faction_Tech_Level_Description>
+  
+  <CM_Semi_Random_Research_Setting_Allow_One_Higher_Tech_Project_Label>Allow one higher tech project</CM_Semi_Random_Research_Setting_Allow_One_Higher_Tech_Project_Label>
+  <CM_Semi_Random_Research_Setting_Allow_One_Higher_Tech_Project_Description>If selected, one available project's tech level may be higher than the limit.</CM_Semi_Random_Research_Setting_Allow_One_Higher_Tech_Project_Description>
 
   <CM_Semi_Random_Research_Available_Projects>Available Projects</CM_Semi_Random_Research_Available_Projects>
 

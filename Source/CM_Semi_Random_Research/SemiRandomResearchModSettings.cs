@@ -23,12 +23,15 @@ namespace CM_Semi_Random_Research
 
         public bool forceLowestTechLevel = false;
         public bool restrictToFactionTechLevel = false;
+        public bool allowOneHigherTechProject = false;
 
         //public bool showResearchButton = true;
 
         public ManualReroll allowManualReroll = ManualReroll.None;
 
         public int availableProjectCount = 3;
+
+        
 
         public override void ExposeData()
         {
@@ -45,6 +48,8 @@ namespace CM_Semi_Random_Research
 
             Scribe_Values.Look(ref forceLowestTechLevel, "forceLowestTechLevel", false);
             Scribe_Values.Look(ref restrictToFactionTechLevel, "restrictToFactionTechLevel", false);
+
+            Scribe_Values.Look(ref allowOneHigherTechProject, "allowOneHigherTechProject", false);
         }
 
         public void DoSettingsWindowContents(Rect inRect)
@@ -65,11 +70,11 @@ namespace CM_Semi_Random_Research
             listing_Standard.GapLine();
 
             listing_Standard.Label("CM_Semi_Random_Research_Setting_Manual_Reroll_Label".Translate());
-            if (listing_Standard.RadioButton_NewTemp("CM_Semi_Random_Research_Setting_No_Manual_Reroll_Label".Translate(), allowManualReroll == ManualReroll.None, 8f, "CM_Semi_Random_Research_Setting_No_Manual_Reroll_Description".Translate()))
+            if (listing_Standard.RadioButton("CM_Semi_Random_Research_Setting_No_Manual_Reroll_Label".Translate(), allowManualReroll == ManualReroll.None, 8f, "CM_Semi_Random_Research_Setting_No_Manual_Reroll_Description".Translate()))
                 allowManualReroll = ManualReroll.None;
-            if (listing_Standard.RadioButton_NewTemp("CM_Semi_Random_Research_Setting_Reroll_One_Time_Label".Translate(), allowManualReroll == ManualReroll.Once, 8f, "CM_Semi_Random_Research_Setting_Reroll_One_Time_Description".Translate()))
+            if (listing_Standard.RadioButton("CM_Semi_Random_Research_Setting_Reroll_One_Time_Label".Translate(), allowManualReroll == ManualReroll.Once, 8f, "CM_Semi_Random_Research_Setting_Reroll_One_Time_Description".Translate()))
                 allowManualReroll = ManualReroll.Once;
-            if (listing_Standard.RadioButton_NewTemp("CM_Semi_Random_Research_Setting_Reroll_Any_Time_Label".Translate(), allowManualReroll == ManualReroll.Always, 8f, "CM_Semi_Random_Research_Setting_Reroll_Any_Time_Description".Translate()))
+            if (listing_Standard.RadioButton("CM_Semi_Random_Research_Setting_Reroll_Any_Time_Label".Translate(), allowManualReroll == ManualReroll.Always, 8f, "CM_Semi_Random_Research_Setting_Reroll_Any_Time_Description".Translate()))
                 allowManualReroll = ManualReroll.Always;
 
             listing_Standard.GapLine();
@@ -81,6 +86,7 @@ namespace CM_Semi_Random_Research
             listing_Standard.GapLine();
             listing_Standard.CheckboxLabeled("CM_Semi_Random_Research_Setting_Force_Lowest_Tech_Level_Label".Translate(), ref forceLowestTechLevel, "CM_Semi_Random_Research_Setting_Force_Lowest_Tech_Level_Description".Translate());
             listing_Standard.CheckboxLabeled("CM_Semi_Random_Research_Setting_Restrict_To_Faction_Tech_Level_Label".Translate(), ref restrictToFactionTechLevel, "CM_Semi_Random_Research_Setting_Restrict_To_Faction_Tech_Level_Description".Translate());
+            listing_Standard.CheckboxLabeled("CM_Semi_Random_Research_Setting_Allow_One_Higher_Tech_Project_Label".Translate(), ref allowOneHigherTechProject, "CM_Semi_Random_Research_Setting_Allow_One_Higher_Tech_Project_Description".Translate());
 
             listing_Standard.End();
 

@@ -101,8 +101,6 @@ namespace CM_Semi_Random_Research
 
         public override void DoWindowContents(Rect rect)
         {
-            base.DoWindowContents(rect);
-
             float columnWidth = ((rect.width - ((Margin * 2) + betweenColumnSpace)) * 0.5f);
             float columnHeight = rect.height - (Margin * 2);
 
