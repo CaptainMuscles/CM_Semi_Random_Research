@@ -1,3 +1,9 @@
+## [1.0.6] - 2022-04-17
+
+### Changed
+- Reduced number of currentAvailableProjects rewritings, to reduce network spam in multiplayer
+- Reroll currently available projects immedeadly on calling Reroll (prevents desync in Multiplayer) 
+
 ## [1.0.5] - 2021-07-23
 
 ### Added

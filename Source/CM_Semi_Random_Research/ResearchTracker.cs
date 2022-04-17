@@ -75,29 +75,30 @@ namespace CM_Semi_Random_Research
 
         public List<ResearchProjectDef> GetCurrentlyAvailableProjects()
         {
-            currentAvailableProjects = currentAvailableProjects.Where(projectDef => !projectDef.IsFinished).ToList();
+            var newCurrentAvailableProjects = currentAvailableProjects.Where(projectDef => !projectDef.IsFinished).ToList();
 
             if (!SemiRandomResearchMod.settings.rerollAllEveryTime || currentProject == null || currentProject.IsFinished)
             {
-                //Log.Message("Replacing missing projects. reroll: " + SemiRandomResearchMod.settings.rerollAllEveryTime.ToString() + " - currentProject null: " + (currentProject == null).ToString());
-                int numberOfMissingProjects = SemiRandomResearchMod.settings.availableProjectCount - currentAvailableProjects.Count;
+                int numberOfMissingProjects = SemiRandomResearchMod.settings.availableProjectCount - newCurrentAvailableProjects.Count;
                 if (numberOfMissingProjects > 0)
                 {
-                    ResearchProjectDef nextProject = GetResearchableProject();
+                    //Log.Message("Replacing missing " + numberOfMissingProjects.ToString() + " projects. reroll: " + SemiRandomResearchMod.settings.rerollAllEveryTime.ToString() + ", currentProject==null: " + (currentProject == null).ToString());
+                
+                    List<ResearchProjectDef> nextProjects = GetResearchableProjects(numberOfMissingProjects);
 
-                    while (nextProject != null && numberOfMissingProjects > 0)
+                    if (nextProjects != null)
                     {
-                        numberOfMissingProjects -= 1;
-                        currentAvailableProjects.Add(nextProject);
-                        nextProject = GetResearchableProject();
+                        //Log.Message("Added " + nextProjects.Count + " items");
+                        newCurrentAvailableProjects.AddRange(nextProjects);
+                        currentAvailableProjects = newCurrentAvailableProjects;
                     }
                 }
             }
 
-            return new List<ResearchProjectDef> (currentAvailableProjects);
+            return new List<ResearchProjectDef> (newCurrentAvailableProjects);
         }
 
-        private ResearchProjectDef GetResearchableProject()
+        private List<ResearchProjectDef> GetResearchableProjects(int count)
         {
             TechLevel maxCurrentProjectTechlevel = TechLevel.Archotech;
             // Get the max tech level of projects already in the offered list
@@ -142,8 +143,12 @@ namespace CM_Semi_Random_Research
 
             if (allAvailableProjects.Count > 0)
             {
+                if (count > allAvailableProjects.Count)
+                {
+                    count = allAvailableProjects.Count;
+                }
                 allAvailableProjects.Shuffle();
-                return allAvailableProjects.First();
+                return allAvailableProjects.GetRange(0, count);
             }
 
             return null;
@@ -171,6 +176,7 @@ namespace CM_Semi_Random_Research
             Find.ResearchManager.currentProj = null;
 
             currentAvailableProjects.Clear();
+            GetCurrentlyAvailableProjects();
         }
     }
 }
